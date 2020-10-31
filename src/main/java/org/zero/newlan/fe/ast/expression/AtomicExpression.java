@@ -8,7 +8,7 @@ import org.zero.newlan.fe.type.PointerType;
 import org.zero.newlan.fe.type.StringType;
 import org.zero.newlan.fe.type.Type;
 
-class AtomicExpression extends Expression {
+public class AtomicExpression extends Expression {
 
     private final String data;
 

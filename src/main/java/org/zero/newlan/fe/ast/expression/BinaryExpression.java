@@ -12,7 +12,7 @@ public class BinaryExpression extends Expression {
 
     private Operator operator;
 
-    public BinaryExpression(
+    private BinaryExpression(
         Type type,
         String fileName,
         int lineNumber,
@@ -25,6 +25,18 @@ public class BinaryExpression extends Expression {
         this.left = left;
         this.right = right;
         this.operator = operator;
+    }
+
+    public Expression getLeft() {
+        return left;
+    }
+
+    public Expression getRight() {
+        return right;
+    }
+
+    public Operator getOperator() {
+        return operator;
     }
 
     static BinaryExpression from(Expression left, Expression right, Operator operator) throws OperationNotSupportedException {
