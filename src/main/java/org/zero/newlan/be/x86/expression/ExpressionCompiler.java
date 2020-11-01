@@ -4,7 +4,11 @@ import org.zero.newlan.fe.ast.expression.AtomicExpression;
 import org.zero.newlan.fe.ast.expression.BinaryExpression;
 import org.zero.newlan.fe.ast.expression.Expression;
 import org.zero.newlan.fe.operator.AdditionOperator;
+import org.zero.newlan.fe.operator.DivisionOperator;
+import org.zero.newlan.fe.operator.MultiplicationOperator;
+import org.zero.newlan.fe.operator.Operator;
 import org.zero.newlan.fe.operator.SubtractionOperator;
+import org.zero.newlan.fe.type.FloatingPointType;
 import org.zero.newlan.fe.type.IntegralType;
 
 public class ExpressionCompiler {
@@ -21,13 +25,23 @@ public class ExpressionCompiler {
     }
 
     private static String compileBinaryExpression(BinaryExpression binaryExpression) {
-        if (binaryExpression.getOperator() instanceof AdditionOperator
-            && binaryExpression.getType() instanceof IntegralType) {
-            return intToIntAddition(binaryExpression);
-        } else if (binaryExpression.getOperator() instanceof SubtractionOperator
-            && binaryExpression.getType() instanceof IntegralType) {
-            return intToIntSubtraction(binaryExpression);
+        if (binaryExpression.getType() instanceof IntegralType) {
+            // int to int operations
+            Operator operator = binaryExpression.getOperator();
+            if (operator instanceof AdditionOperator) {
+                return intToIntAddition(binaryExpression);
+            } else if (operator instanceof SubtractionOperator) {
+                return intToIntSubtraction(binaryExpression);
+            } else if (operator instanceof MultiplicationOperator) {
+                return intToIntMultiplication(binaryExpression);
+            } else if (operator instanceof DivisionOperator) {
+                return intToIntDivision(binaryExpression);
+            }
+        } else if (binaryExpression.getType() instanceof FloatingPointType) {
+            // float to float or float to int operations
+            // TODO
         }
+
         return null;
     }
 
@@ -46,6 +60,24 @@ public class ExpressionCompiler {
             + "pop ebx\n"
             + "pop eax\n"
             + "add eax, ebx\n"
+            + "push eax\n";
+    }
+
+    private static String intToIntDivision(BinaryExpression binaryExpression) {
+        return compile(binaryExpression.getLeft())
+            + compile(binaryExpression.getRight())
+            + "pop ebx\n"
+            + "pop eax\n"
+            + "idiv ebx\n"
+            + "push eax\n";
+    }
+
+    private static String intToIntMultiplication(BinaryExpression binaryExpression) {
+        return compile(binaryExpression.getLeft())
+            + compile(binaryExpression.getRight())
+            + "pop ebx\n"
+            + "pop eax\n"
+            + "imul ebx\n"
             + "push eax\n";
     }
 

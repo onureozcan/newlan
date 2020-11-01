@@ -10,6 +10,8 @@ public class OperatorRepo {
     static {
         operatorMap.putIfAbsent("-", new SubtractionOperator());
         operatorMap.putIfAbsent("+", new AdditionOperator());
+        operatorMap.putIfAbsent("/", new DivisionOperator());
+        operatorMap.putIfAbsent("*", new MultiplicationOperator());
     }
 
     public static Operator get(String token) {
