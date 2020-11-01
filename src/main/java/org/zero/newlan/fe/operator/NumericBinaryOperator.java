@@ -5,9 +5,9 @@ import org.zero.newlan.fe.type.IntegralType;
 import org.zero.newlan.fe.type.PointerType;
 import org.zero.newlan.fe.type.Type;
 
-class NumericOperator extends Operator{
+class NumericBinaryOperator extends BinaryOperator {
 
-    NumericOperator(String token) {
+    NumericBinaryOperator(String token) {
         super(token);
     }
 

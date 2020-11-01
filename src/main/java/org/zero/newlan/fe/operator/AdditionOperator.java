@@ -3,7 +3,7 @@ package org.zero.newlan.fe.operator;
 import org.zero.newlan.fe.type.StringType;
 import org.zero.newlan.fe.type.Type;
 
-public class AdditionOperator extends NumericOperator {
+public class AdditionOperator extends NumericBinaryOperator {
 
     AdditionOperator() {
         super("+");

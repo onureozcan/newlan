@@ -5,16 +5,22 @@ import java.util.Map;
 
 public class OperatorRepo {
 
-    private static Map<String, Operator> operatorMap = new HashMap<>();
+    private static Map<String, BinaryOperator> binaryOperatorMap = new HashMap<>();
+    private static Map<String, PrefixOperator> prefixOperatorMap = new HashMap<>();
 
     static {
-        operatorMap.putIfAbsent("-", new SubtractionOperator());
-        operatorMap.putIfAbsent("+", new AdditionOperator());
-        operatorMap.putIfAbsent("/", new DivisionOperator());
-        operatorMap.putIfAbsent("*", new MultiplicationOperator());
+        binaryOperatorMap.putIfAbsent("-", new SubtractionOperator());
+        binaryOperatorMap.putIfAbsent("+", new AdditionOperator());
+        binaryOperatorMap.putIfAbsent("/", new DivisionOperator());
+        binaryOperatorMap.putIfAbsent("*", new MultiplicationOperator());
+
+        prefixOperatorMap.putIfAbsent("-", new NegativeOperator());
     }
 
-    public static Operator get(String token) {
-        return operatorMap.get(token);
+    public static BinaryOperator getBinary(String token) {
+        return binaryOperatorMap.get(token);
+    }
+    public static PrefixOperator getPrefix(String token) {
+        return prefixOperatorMap.get(token);
     }
 }

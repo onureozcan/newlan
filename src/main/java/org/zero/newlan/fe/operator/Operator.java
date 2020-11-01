@@ -14,8 +14,6 @@ public abstract class Operator {
         return token;
     }
 
-    public abstract Type returnsTo(Type t1, Type t2) throws OperationNotSupportedException;
-
     @Override
     public String toString() {
         return this.getToken();

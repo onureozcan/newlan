@@ -1,6 +1,6 @@
 package org.zero.newlan.fe.operator;
 
-public class SubtractionOperator extends NumericOperator {
+public class SubtractionOperator extends NumericBinaryOperator {
 
     SubtractionOperator() {
         super("-");

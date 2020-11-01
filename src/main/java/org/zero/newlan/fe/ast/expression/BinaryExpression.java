@@ -1,5 +1,6 @@
 package org.zero.newlan.fe.ast.expression;
 
+import org.zero.newlan.fe.operator.BinaryOperator;
 import org.zero.newlan.fe.operator.OperationNotSupportedException;
 import org.zero.newlan.fe.operator.Operator;
 import org.zero.newlan.fe.type.Type;
@@ -39,7 +40,7 @@ public class BinaryExpression extends Expression {
         return operator;
     }
 
-    static BinaryExpression from(Expression left, Expression right, Operator operator) throws OperationNotSupportedException {
+    static BinaryExpression from(Expression left, Expression right, BinaryOperator operator) throws OperationNotSupportedException {
         Type returnType = operator.returnsTo(left.getType(), right.getType());
         return new BinaryExpression(returnType, left.getFileName(), left.getLineNumber(), left.getPos(), left, right, operator);
     }

@@ -3,6 +3,7 @@ package org.zero.newlan.be.x86.program;
 public enum Opcode {
     BLANK(""),
     NOP("nop"),
+    NEG("neg"),
     PUSH("push"),
     POP("pop"),
     ADD("add"),

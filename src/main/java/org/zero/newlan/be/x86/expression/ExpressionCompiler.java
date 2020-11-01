@@ -5,9 +5,11 @@ import org.zero.newlan.be.x86.program.Program;
 import org.zero.newlan.fe.ast.expression.AtomicExpression;
 import org.zero.newlan.fe.ast.expression.BinaryExpression;
 import org.zero.newlan.fe.ast.expression.Expression;
+import org.zero.newlan.fe.ast.expression.PrefixExpression;
 import org.zero.newlan.fe.operator.AdditionOperator;
 import org.zero.newlan.fe.operator.DivisionOperator;
 import org.zero.newlan.fe.operator.MultiplicationOperator;
+import org.zero.newlan.fe.operator.NegativeOperator;
 import org.zero.newlan.fe.operator.Operator;
 import org.zero.newlan.fe.operator.SubtractionOperator;
 import org.zero.newlan.fe.type.FloatingPointType;
@@ -28,7 +30,26 @@ public class ExpressionCompiler {
         } else if (expression instanceof BinaryExpression) {
             BinaryExpression binaryExpression = (BinaryExpression) expression;
             compileBinaryExpression(binaryExpression);
+        } else if (expression instanceof PrefixExpression) {
+            PrefixExpression prefixExpression = (PrefixExpression) expression;
+            compilePrefixExpression(prefixExpression);
         }
+    }
+
+    private void compilePrefixExpression(PrefixExpression prefixExpression) {
+        if (prefixExpression.getType() instanceof IntegralType) {
+            Operator operator = prefixExpression.getOperator();
+            if (operator instanceof NegativeOperator) {
+                numericNegInt(prefixExpression);
+            }
+        }
+    }
+
+    private void numericNegInt(PrefixExpression prefixExpression) {
+        compile(prefixExpression.getRight());
+        program.addInstruction(Opcode.POP).op("eax");
+        program.addInstruction(Opcode.NEG).op("eax");
+        program.addInstruction(Opcode.PUSH).op("eax");
     }
 
     private void compileBinaryExpression(BinaryExpression binaryExpression) {
