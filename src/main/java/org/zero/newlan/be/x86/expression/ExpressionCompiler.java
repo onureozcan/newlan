@@ -1,5 +1,7 @@
 package org.zero.newlan.be.x86.expression;
 
+import org.zero.newlan.be.x86.program.Opcode;
+import org.zero.newlan.be.x86.program.Program;
 import org.zero.newlan.fe.ast.expression.AtomicExpression;
 import org.zero.newlan.fe.ast.expression.BinaryExpression;
 import org.zero.newlan.fe.ast.expression.Expression;
@@ -13,79 +15,81 @@ import org.zero.newlan.fe.type.IntegralType;
 
 public class ExpressionCompiler {
 
-    public static String compile(Expression expression) {
-        if (expression instanceof AtomicExpression) {
-            AtomicExpression atom = (AtomicExpression) expression;
-            return compileAtom(atom);
-        } else if (expression instanceof BinaryExpression) {
-            BinaryExpression binaryExpression = (BinaryExpression) expression;
-            return compileBinaryExpression(binaryExpression);
-        }
-        return null;
+    private Program program;
+
+    public ExpressionCompiler(Program program) {
+        this.program = program;
     }
 
-    private static String compileBinaryExpression(BinaryExpression binaryExpression) {
+    public void compile(Expression expression) {
+        if (expression instanceof AtomicExpression) {
+            AtomicExpression atom = (AtomicExpression) expression;
+            compileAtom(atom);
+        } else if (expression instanceof BinaryExpression) {
+            BinaryExpression binaryExpression = (BinaryExpression) expression;
+            compileBinaryExpression(binaryExpression);
+        }
+    }
+
+    private void compileBinaryExpression(BinaryExpression binaryExpression) {
         if (binaryExpression.getType() instanceof IntegralType) {
             // int to int operations
             Operator operator = binaryExpression.getOperator();
             if (operator instanceof AdditionOperator) {
-                return intToIntAddition(binaryExpression);
+                intToIntAddition(binaryExpression);
             } else if (operator instanceof SubtractionOperator) {
-                return intToIntSubtraction(binaryExpression);
+                intToIntSubtraction(binaryExpression);
             } else if (operator instanceof MultiplicationOperator) {
-                return intToIntMultiplication(binaryExpression);
+                intToIntMultiplication(binaryExpression);
             } else if (operator instanceof DivisionOperator) {
-                return intToIntDivision(binaryExpression);
+                intToIntDivision(binaryExpression);
             }
         } else if (binaryExpression.getType() instanceof FloatingPointType) {
             // float to float or float to int operations
             // TODO
         }
-
-        return null;
     }
 
-    private static String intToIntSubtraction(BinaryExpression binaryExpression) {
-        return compile(binaryExpression.getLeft())
-            + compile(binaryExpression.getRight())
-            + "pop ebx\n"
-            + "pop eax\n"
-            + "sub eax, ebx\n"
-            + "push eax\n";
+    private void intToIntSubtraction(BinaryExpression binaryExpression) {
+        compile(binaryExpression.getLeft());
+        compile(binaryExpression.getRight());
+        program.addInstruction(Opcode.POP).op("ebx");
+        program.addInstruction(Opcode.POP).op("eax");
+        program.addInstruction(Opcode.SUB).op("ebx").op("eax").comment(binaryExpression.toString());
+        program.addInstruction(Opcode.PUSH).op("eax");
     }
 
-    private static String intToIntAddition(BinaryExpression binaryExpression) {
-        return compile(binaryExpression.getLeft())
-            + compile(binaryExpression.getRight())
-            + "pop ebx\n"
-            + "pop eax\n"
-            + "add eax, ebx\n"
-            + "push eax\n";
+    private void intToIntAddition(BinaryExpression binaryExpression) {
+        compile(binaryExpression.getLeft());
+        compile(binaryExpression.getRight());
+        program.addInstruction(Opcode.POP).op("ebx");
+        program.addInstruction(Opcode.POP).op("eax");
+        program.addInstruction(Opcode.ADD).op("ebx").op("eax").comment(binaryExpression.toString());
+        program.addInstruction(Opcode.PUSH).op("eax");
     }
 
-    private static String intToIntDivision(BinaryExpression binaryExpression) {
-        return compile(binaryExpression.getLeft())
-            + compile(binaryExpression.getRight())
-            + "pop ebx\n"
-            + "pop eax\n"
-            + "idiv ebx\n"
-            + "push eax\n";
+    private void intToIntDivision(BinaryExpression binaryExpression) {
+        compile(binaryExpression.getLeft());
+        compile(binaryExpression.getRight());
+        program.addInstruction(Opcode.POP).op("ebx");
+        program.addInstruction(Opcode.POP).op("eax");
+        program.addInstruction(Opcode.IDIV).op("ebx").comment(binaryExpression.toString());
+        program.addInstruction(Opcode.PUSH).op("eax");
     }
 
-    private static String intToIntMultiplication(BinaryExpression binaryExpression) {
-        return compile(binaryExpression.getLeft())
-            + compile(binaryExpression.getRight())
-            + "pop ebx\n"
-            + "pop eax\n"
-            + "imul ebx\n"
-            + "push eax\n";
+    private void intToIntMultiplication(BinaryExpression binaryExpression) {
+        compile(binaryExpression.getLeft());
+        compile(binaryExpression.getRight());
+        program.addInstruction(Opcode.POP).op("ebx");
+        program.addInstruction(Opcode.POP).op("eax");
+        program.addInstruction(Opcode.IMUL).op("ebx").comment(binaryExpression.toString());
+        program.addInstruction(Opcode.PUSH).op("eax");
     }
 
-    private static String compileAtom(AtomicExpression atom) {
+    private void compileAtom(AtomicExpression atom) {
         if (atom.getType() instanceof IntegralType) {
-            return "push " + atom.getData() + "\n";
+            program.addInstruction(Opcode.PUSH).op(atom.getData()).comment(atom.toString());
         }
-        return null;
     }
 
 }
