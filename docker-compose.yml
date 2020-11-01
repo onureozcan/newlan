@@ -1,0 +1,10 @@
+version: "3"
+services:
+  gcc:
+    build: .
+    container_name: gcc
+    command: "./scripts/compile_asm_and_run.sh"
+    volumes:
+      - "./scripts:/scripts"
+      - "./build_dir:/build_dir"
+      - "./native:/native"

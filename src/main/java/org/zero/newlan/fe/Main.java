@@ -16,10 +16,11 @@ import org.zero.newlan.fe.ast.expression.Expression;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        if (args.length != 1) {
-            throw new RuntimeException("Expected exactly 1 argument");
+        if (args.length != 2) {
+            throw new RuntimeException("Expected exactly 2 arguments");
         }
         String fileName = args[0];
+        String outputFileName = args[1];
         newlanLexer lexer = new newlanLexer(
             CharStreams.fromString(
                 String.join(System.lineSeparator(), Files.readAllLines(
@@ -36,6 +37,6 @@ public class Main {
         ).collect(Collectors.toList());
         expressionList.forEach(System.out::println);
         CompilerX86 compiler = new CompilerX86();
-        compiler.compile(expressionList, fileName);
+        compiler.compile(expressionList, outputFileName);
     }
 }

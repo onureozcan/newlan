@@ -64,7 +64,7 @@ public class ExpressionCompiler {
         compile(binaryExpression.getRight());
         program.addInstruction(Opcode.POP).op("ebx");
         program.addInstruction(Opcode.POP).op("eax");
-        program.addInstruction(Opcode.ADD).op("ebx").op("eax").comment(binaryExpression.toString());
+        program.addInstruction(Opcode.ADD).op("eax").op("ebx").comment(binaryExpression.toString());
         program.addInstruction(Opcode.PUSH).op("eax");
     }
 

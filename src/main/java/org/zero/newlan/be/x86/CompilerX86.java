@@ -15,12 +15,14 @@ public class CompilerX86 {
     private ExpressionCompiler expressionCompiler = new ExpressionCompiler(program);
 
     public void compile(List<Expression> expressions, String fileName) throws IOException {
-        program.addLabel("new_lang_main");
+        program.addLabel("new_lan_main");
+        program.addInstruction(Opcode.PUSH).op("ebx");
         expressions.forEach(this::compileExpression);
         program.addInstruction(Opcode.POP).op("eax");
+        program.addInstruction(Opcode.POP).op("ebx");
         program.addInstruction(Opcode.RET);
-        String outputAsm = program.toString();
-        Files.write(new File(fileName + ".asm").toPath(), outputAsm.getBytes());
+        String outputAsm = "global new_lan_main\n\n" + program.toString();
+        Files.write(new File(fileName).toPath(), outputAsm.getBytes());
     }
 
     private void compileExpression(Expression expression) {
