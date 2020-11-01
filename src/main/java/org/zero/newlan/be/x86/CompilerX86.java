@@ -18,7 +18,6 @@ public class CompilerX86 {
         program.addLabel("new_lan_main");
         program.addInstruction(Opcode.PUSH).op("ebx");
         expressions.forEach(this::compileExpression);
-        program.addInstruction(Opcode.POP).op("eax");
         program.addInstruction(Opcode.POP).op("ebx");
         program.addInstruction(Opcode.RET);
         String outputAsm = "global new_lan_main\n\n" + program.toString();
@@ -27,5 +26,6 @@ public class CompilerX86 {
 
     private void compileExpression(Expression expression) {
         expressionCompiler.compile(expression);
+        program.addInstruction(Opcode.POP).op("eax"); // TODO: do not pop if a consumer is found for the expression
     }
 }
