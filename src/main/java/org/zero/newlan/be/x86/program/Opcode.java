@@ -4,6 +4,8 @@ public enum Opcode {
     BLANK(""),
     NOP("nop"),
     NEG("neg"),
+    MOV("mov"),
+    CDQ("cdq"),
     PUSH("push"),
     POP("pop"),
     ADD("add"),

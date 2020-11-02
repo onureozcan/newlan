@@ -40,6 +40,6 @@ public class PrefixExpression extends Expression {
 
     @Override
     public String toString() {
-        return "((" + this.operator + " " + this.right + "): " + this.getType().getName() + ")";
+        return "(" + this.operator + "(" + this.right + "): " + this.getType().getName() + ")";
     }
 }
