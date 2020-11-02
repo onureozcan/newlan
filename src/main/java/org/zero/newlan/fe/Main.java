@@ -6,6 +6,7 @@ import generated.newlanParser.RootContext;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.antlr.v4.runtime.CharStreams;
@@ -16,8 +17,8 @@ import org.zero.newlan.fe.ast.expression.Expression;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        if (args.length != 2) {
-            throw new RuntimeException("Expected exactly 2 arguments");
+        if (args.length < 2) {
+            throw new RuntimeException("Expected at least 2 arguments");
         }
         String fileName = args[0];
         String outputFileName = args[1];
@@ -36,7 +37,7 @@ public class Main {
             e-> Expression.from(e, fileName)
         ).collect(Collectors.toList());
         expressionList.forEach(System.out::println);
-        CompilerX86 compiler = new CompilerX86();
+        CompilerX86 compiler = new CompilerX86(Arrays.asList(args).contains("-x64"));
         compiler.compile(expressionList, outputFileName);
     }
 }

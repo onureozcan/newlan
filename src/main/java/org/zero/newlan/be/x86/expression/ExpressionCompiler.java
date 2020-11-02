@@ -1,5 +1,6 @@
 package org.zero.newlan.be.x86.expression;
 
+import org.zero.newlan.be.x86.Registers;
 import org.zero.newlan.be.x86.program.Opcode;
 import org.zero.newlan.be.x86.program.Program;
 import org.zero.newlan.fe.ast.expression.AtomicExpression;
@@ -18,9 +19,11 @@ import org.zero.newlan.fe.type.IntegralType;
 public class ExpressionCompiler {
 
     private Program program;
+    private Registers r;
 
-    public ExpressionCompiler(Program program) {
+    public ExpressionCompiler(Program program, Registers registers) {
         this.program = program;
+        this.r = registers;
     }
 
     public void compile(Expression expression) {
@@ -47,9 +50,9 @@ public class ExpressionCompiler {
 
     private void numericNegInt(PrefixExpression prefixExpression) {
         compile(prefixExpression.getRight());
-        program.addInstruction(Opcode.POP).op("eax");
-        program.addInstruction(Opcode.NEG).op("eax");
-        program.addInstruction(Opcode.PUSH).op("eax");
+        program.addInstruction(Opcode.POP).op(r.AX);
+        program.addInstruction(Opcode.NEG).op(r.AX);
+        program.addInstruction(Opcode.PUSH).op(r.AX);
     }
 
     private void compileBinaryExpression(BinaryExpression binaryExpression) {
@@ -74,38 +77,38 @@ public class ExpressionCompiler {
     private void intToIntSubtraction(BinaryExpression binaryExpression) {
         compile(binaryExpression.getLeft());
         compile(binaryExpression.getRight());
-        program.addInstruction(Opcode.POP).op("ebx");
-        program.addInstruction(Opcode.POP).op("eax");
-        program.addInstruction(Opcode.SUB).op("eax").op("ebx").comment(binaryExpression.toString());
-        program.addInstruction(Opcode.PUSH).op("eax");
+        program.addInstruction(Opcode.POP).op(r.BX);
+        program.addInstruction(Opcode.POP).op(r.AX);
+        program.addInstruction(Opcode.SUB).op(r.AX).op(r.BX).comment(binaryExpression.toString());
+        program.addInstruction(Opcode.PUSH).op(r.AX);
     }
 
     private void intToIntAddition(BinaryExpression binaryExpression) {
         compile(binaryExpression.getLeft());
         compile(binaryExpression.getRight());
-        program.addInstruction(Opcode.POP).op("ebx");
-        program.addInstruction(Opcode.POP).op("eax");
-        program.addInstruction(Opcode.ADD).op("eax").op("ebx").comment(binaryExpression.toString());
-        program.addInstruction(Opcode.PUSH).op("eax");
+        program.addInstruction(Opcode.POP).op(r.BX);
+        program.addInstruction(Opcode.POP).op(r.AX);
+        program.addInstruction(Opcode.ADD).op(r.AX).op(r.BX).comment(binaryExpression.toString());
+        program.addInstruction(Opcode.PUSH).op(r.AX);
     }
 
     private void intToIntDivision(BinaryExpression binaryExpression) {
         compile(binaryExpression.getLeft());
         compile(binaryExpression.getRight());
-        program.addInstruction(Opcode.POP).op("ebx");
-        program.addInstruction(Opcode.POP).op("eax");
+        program.addInstruction(Opcode.POP).op(r.BX);
+        program.addInstruction(Opcode.POP).op(r.AX);
         program.addInstruction(Opcode.CDQ);
-        program.addInstruction(Opcode.IDIV).op("ebx").comment(binaryExpression.toString());
-        program.addInstruction(Opcode.PUSH).op("eax");
+        program.addInstruction(Opcode.IDIV).op(r.BX).comment(binaryExpression.toString());
+        program.addInstruction(Opcode.PUSH).op(r.AX);
     }
 
     private void intToIntMultiplication(BinaryExpression binaryExpression) {
         compile(binaryExpression.getLeft());
         compile(binaryExpression.getRight());
-        program.addInstruction(Opcode.POP).op("ebx");
-        program.addInstruction(Opcode.POP).op("eax");
-        program.addInstruction(Opcode.IMUL).op("ebx").comment(binaryExpression.toString());
-        program.addInstruction(Opcode.PUSH).op("eax");
+        program.addInstruction(Opcode.POP).op(r.BX);
+        program.addInstruction(Opcode.POP).op(r.AX);
+        program.addInstruction(Opcode.IMUL).op(r.BX).comment(binaryExpression.toString());
+        program.addInstruction(Opcode.PUSH).op(r.AX);
     }
 
     private void compileAtom(AtomicExpression atom) {
