@@ -13,7 +13,7 @@ public class AtomicExpression extends Expression {
     private final String data;
 
     private AtomicExpression(Type type, String data, String fileName, int lineNumber, int pos) {
-        super(type, fileName, lineNumber, pos);
+        super(type, 0, fileName, lineNumber, pos);
         this.data = data;
     }
 

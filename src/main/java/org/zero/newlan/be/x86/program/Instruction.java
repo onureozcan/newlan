@@ -17,7 +17,7 @@ public class Instruction {
         this.opcode = opcode;
     }
 
-    public Opcode getOpcode() {
+    Opcode getOpcode() {
         return opcode;
     }
 
@@ -25,7 +25,7 @@ public class Instruction {
         return operands;
     }
 
-    public Instruction label(String label) {
+    Instruction label(String label) {
         this.label = label;
         return this;
     }
@@ -40,8 +40,20 @@ public class Instruction {
         return this;
     }
 
+    String opAt(int i) {
+        return operands.get(i);
+    }
+
+    String label() {
+        return label;
+    }
+
+    boolean hasLabel() {
+        return label != null;
+    }
+
     @Override
     public String toString() {
-        return (label != null ? label + ":" : "\t") + opcode + " " + String.join(",", operands) + "; " + comment;
+        return (hasLabel() ? label + ":" : "\t") + opcode + " " + String.join(",", operands) + "; " + comment;
     }
 }

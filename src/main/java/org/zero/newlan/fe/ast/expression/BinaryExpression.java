@@ -22,7 +22,7 @@ public class BinaryExpression extends Expression {
         Expression right,
         Operator operator
     ) {
-        super(type, fileName, lineNumber, pos);
+        super(type, left.getNumberOfChildren() + right.getNumberOfChildren() + 2, fileName, lineNumber, pos);
         this.left = left;
         this.right = right;
         this.operator = operator;

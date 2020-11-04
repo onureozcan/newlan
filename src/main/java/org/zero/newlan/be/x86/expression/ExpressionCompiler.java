@@ -1,7 +1,6 @@
 package org.zero.newlan.be.x86.expression;
 
 import org.zero.newlan.be.x86.Registers;
-import org.zero.newlan.be.x86.program.Opcode;
 import org.zero.newlan.be.x86.program.Program;
 import org.zero.newlan.fe.ast.expression.AtomicExpression;
 import org.zero.newlan.fe.ast.expression.BinaryExpression;
@@ -16,17 +15,28 @@ import org.zero.newlan.fe.operator.SubtractionOperator;
 import org.zero.newlan.fe.type.FloatingPointType;
 import org.zero.newlan.fe.type.IntegralType;
 
-public class ExpressionCompiler {
+public abstract class ExpressionCompiler {
 
-    private Program program;
-    private Registers r;
+    Program program;
+    Registers r;
 
-    public ExpressionCompiler(Program program, Registers registers) {
+    ExpressionCompiler(Program program, Registers registers) {
         this.program = program;
         this.r = registers;
     }
 
-    public void compile(Expression expression) {
+    abstract void intToIntAddition(BinaryExpression binaryExpression);
+    abstract void intToIntDivision(BinaryExpression binaryExpression);
+    abstract void intToIntMultiplication(BinaryExpression binaryExpression);
+    abstract void numericNegInt(PrefixExpression prefixExpression);
+    abstract void intToIntSubtraction(BinaryExpression binaryExpression);
+    abstract void compileAtom(AtomicExpression atom);
+
+    public void compileExpression(Expression expression) {
+        compileInternal(expression);
+    }
+
+    void compileInternal(Expression expression) {
         if (expression instanceof AtomicExpression) {
             AtomicExpression atom = (AtomicExpression) expression;
             compileAtom(atom);
@@ -37,22 +47,6 @@ public class ExpressionCompiler {
             PrefixExpression prefixExpression = (PrefixExpression) expression;
             compilePrefixExpression(prefixExpression);
         }
-    }
-
-    private void compilePrefixExpression(PrefixExpression prefixExpression) {
-        if (prefixExpression.getType() instanceof IntegralType) {
-            Operator operator = prefixExpression.getOperator();
-            if (operator instanceof NegativeOperator) {
-                numericNegInt(prefixExpression);
-            }
-        }
-    }
-
-    private void numericNegInt(PrefixExpression prefixExpression) {
-        compile(prefixExpression.getRight());
-        program.addInstruction(Opcode.POP).op(r.AX);
-        program.addInstruction(Opcode.NEG).op(r.AX);
-        program.addInstruction(Opcode.PUSH).op(r.AX);
     }
 
     private void compileBinaryExpression(BinaryExpression binaryExpression) {
@@ -74,47 +68,13 @@ public class ExpressionCompiler {
         }
     }
 
-    private void intToIntSubtraction(BinaryExpression binaryExpression) {
-        compile(binaryExpression.getLeft());
-        compile(binaryExpression.getRight());
-        program.addInstruction(Opcode.POP).op(r.BX);
-        program.addInstruction(Opcode.POP).op(r.AX);
-        program.addInstruction(Opcode.SUB).op(r.AX).op(r.BX).comment(binaryExpression.toString());
-        program.addInstruction(Opcode.PUSH).op(r.AX);
-    }
 
-    private void intToIntAddition(BinaryExpression binaryExpression) {
-        compile(binaryExpression.getLeft());
-        compile(binaryExpression.getRight());
-        program.addInstruction(Opcode.POP).op(r.BX);
-        program.addInstruction(Opcode.POP).op(r.AX);
-        program.addInstruction(Opcode.ADD).op(r.AX).op(r.BX).comment(binaryExpression.toString());
-        program.addInstruction(Opcode.PUSH).op(r.AX);
-    }
-
-    private void intToIntDivision(BinaryExpression binaryExpression) {
-        compile(binaryExpression.getLeft());
-        compile(binaryExpression.getRight());
-        program.addInstruction(Opcode.POP).op(r.BX);
-        program.addInstruction(Opcode.POP).op(r.AX);
-        program.addInstruction(Opcode.CDQ);
-        program.addInstruction(Opcode.IDIV).op(r.BX).comment(binaryExpression.toString());
-        program.addInstruction(Opcode.PUSH).op(r.AX);
-    }
-
-    private void intToIntMultiplication(BinaryExpression binaryExpression) {
-        compile(binaryExpression.getLeft());
-        compile(binaryExpression.getRight());
-        program.addInstruction(Opcode.POP).op(r.BX);
-        program.addInstruction(Opcode.POP).op(r.AX);
-        program.addInstruction(Opcode.IMUL).op(r.BX).comment(binaryExpression.toString());
-        program.addInstruction(Opcode.PUSH).op(r.AX);
-    }
-
-    private void compileAtom(AtomicExpression atom) {
-        if (atom.getType() instanceof IntegralType) {
-            program.addInstruction(Opcode.PUSH).op(atom.getData()).comment(atom.toString());
+    private void compilePrefixExpression(PrefixExpression prefixExpression) {
+        if (prefixExpression.getType() instanceof IntegralType) {
+            Operator operator = prefixExpression.getOperator();
+            if (operator instanceof NegativeOperator) {
+                numericNegInt(prefixExpression);
+            }
         }
     }
-
 }

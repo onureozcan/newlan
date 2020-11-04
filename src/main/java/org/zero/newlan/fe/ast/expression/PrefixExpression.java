@@ -20,7 +20,7 @@ public class PrefixExpression extends Expression {
         Expression right,
         PrefixOperator operator
     ) {
-        super(type, fileName, lineNumber, pos);
+        super(type, right.getNumberOfChildren() + 1,fileName, lineNumber, pos);
         this.right = right;
         this.operator = operator;
     }

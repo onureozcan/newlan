@@ -14,10 +14,16 @@ import org.zero.newlan.fe.type.Type;
 public class Expression extends AstNode {
 
     private Type type;
+    private int numberOfChildren;
 
-    Expression(Type type, String fileName, int lineNumber, int pos) {
+    Expression(Type type, int numberOfChildren, String fileName, int lineNumber, int pos) {
         super(fileName, lineNumber, pos);
         this.type = type;
+        this.numberOfChildren = numberOfChildren;
+    }
+
+    public int getNumberOfChildren() {
+        return numberOfChildren;
     }
 
     public Type getType() {
