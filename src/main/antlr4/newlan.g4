@@ -5,8 +5,12 @@ package generated;
 }
 
 root:
-  (expression SEMICOL)*
+  body
 ;
+
+body: statement*;
+
+statement: ((expression | variableDeclaration) SEMICOL);
 
 expression:primaryExpresssion
        | expression bop ='.' expression
@@ -26,6 +30,8 @@ primaryExpresssion
     | atom
     ;
 
+variableDeclaration: VAR variableName=IDENT (':' type = IDENT)? ('=' expression)?;
+
 atom: (STRING|INT|DECIMAL|IDENT);
 
 BlockComment
@@ -42,6 +48,8 @@ NEWLINE            : ['\r\n' | '\r' | '\n']+ ->skip ;
 WS                 : [\t ]+ -> skip ;
 
 SEMICOL: ';';
+
+VAR: 'var';
 
 INT             : '0'|[1-9][0-9]* ;
 DECIMAL         : [0-9][0-9]* '.' [0-9]+ ;

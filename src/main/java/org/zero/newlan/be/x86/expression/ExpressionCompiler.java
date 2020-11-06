@@ -7,6 +7,7 @@ import org.zero.newlan.fe.ast.expression.BinaryExpression;
 import org.zero.newlan.fe.ast.expression.Expression;
 import org.zero.newlan.fe.ast.expression.PrefixExpression;
 import org.zero.newlan.fe.operator.AdditionOperator;
+import org.zero.newlan.fe.operator.AssignmentOperator;
 import org.zero.newlan.fe.operator.DivisionOperator;
 import org.zero.newlan.fe.operator.MultiplicationOperator;
 import org.zero.newlan.fe.operator.NegativeOperator;
@@ -50,7 +51,9 @@ public abstract class ExpressionCompiler {
     }
 
     private void compileBinaryExpression(BinaryExpression binaryExpression) {
-        if (binaryExpression.getType() instanceof IntegralType) {
+        if (binaryExpression.getOperator() instanceof AssignmentOperator) {
+            compileAssignment(binaryExpression);
+        } else if (binaryExpression.getType() instanceof IntegralType) {
             // int to int operations
             Operator operator = binaryExpression.getOperator();
             if (operator instanceof AdditionOperator) {
@@ -68,6 +71,7 @@ public abstract class ExpressionCompiler {
         }
     }
 
+    abstract void compileAssignment(BinaryExpression binaryExpression);
 
     private void compilePrefixExpression(PrefixExpression prefixExpression) {
         if (prefixExpression.getType() instanceof IntegralType) {

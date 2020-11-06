@@ -21,6 +21,11 @@ public class StackBasedExpressionCompiler extends ExpressionCompiler {
         program.addInstruction(Opcode.POP).op(r.AX);
     }
 
+    @Override
+    void compileAssignment(BinaryExpression binaryExpression) {
+
+    }
+
     void numericNegInt(PrefixExpression prefixExpression) {
         compileInternal(prefixExpression.getRight());
         program.addInstruction(Opcode.POP).op(r.AX);

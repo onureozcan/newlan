@@ -13,6 +13,7 @@ import org.zero.newlan.fe.ast.expression.BinaryExpression;
 import org.zero.newlan.fe.ast.expression.Expression;
 import org.zero.newlan.fe.ast.expression.PrefixExpression;
 import org.zero.newlan.fe.type.IntegralType;
+import org.zero.newlan.fe.type.PropertyNotFoundException;
 
 /**
  * RegisterBasedExpressionCompiler Assumes that all the registers are safe to use! return value at AX
@@ -35,6 +36,17 @@ public class RegisterBasedExpressionCompiler extends ExpressionCompiler {
         //registerAvailabilityMap.put(r.DX, true);
         super.compileExpression(expression);
         program.addInstruction(Opcode.MOV).op(r.AX).op(valueReg);
+    }
+
+    @Override
+    void compileAssignment(BinaryExpression binaryExpression) {
+        compileInternal(binaryExpression.getRight());
+        String r2 = valueReg;
+        compileInternal(binaryExpression.getLeft());
+        String r1 = valueReg;
+        program.addInstruction(Opcode.MOV).op("[" + r1 + "]").op(r2).comment(binaryExpression.toString());
+        freeRegister(r1);
+        valueReg = r2;
     }
 
     void numericNegInt(PrefixExpression prefixExpression) {
@@ -111,7 +123,18 @@ public class RegisterBasedExpressionCompiler extends ExpressionCompiler {
     void compileAtom(AtomicExpression atom) {
         if (atom.getType() instanceof IntegralType) {
             valueReg = getRegister();
-            program.addInstruction(Opcode.MOV).op(valueReg).op(atom.getData()).comment(atom.toString());
+            if (atom.isIdent()) {
+                try {
+                    int index = atom.getThisObjType().getIndexOf(atom.getData());
+                    // Base pointer points at this
+                    program.addInstruction(Opcode.MOV).op(valueReg).op("[" + r.BP + " + " + (index * r.sizeOfInt()) + "]")
+                        .comment(atom.toString());
+                } catch (PropertyNotFoundException e) {
+                    throw new RuntimeException("this should not have happened!");
+                }
+            } else {
+                program.addInstruction(Opcode.MOV).op(valueReg).op(atom.getData()).comment(atom.toString());
+            }
         }
     }
 

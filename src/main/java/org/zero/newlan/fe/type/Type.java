@@ -11,4 +11,9 @@ public abstract class Type {
     public String getName() {
         return name;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Type && name.equals(((Type) obj).name);
+    }
 }

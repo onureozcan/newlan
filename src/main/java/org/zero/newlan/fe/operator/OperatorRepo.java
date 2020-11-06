@@ -13,6 +13,7 @@ public class OperatorRepo {
         binaryOperatorMap.putIfAbsent("+", new AdditionOperator());
         binaryOperatorMap.putIfAbsent("/", new DivisionOperator());
         binaryOperatorMap.putIfAbsent("*", new MultiplicationOperator());
+        binaryOperatorMap.putIfAbsent("=", new AssignmentOperator());
 
         prefixOperatorMap.putIfAbsent("-", new NegativeOperator());
     }

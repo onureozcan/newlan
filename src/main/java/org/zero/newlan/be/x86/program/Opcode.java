@@ -13,7 +13,8 @@ public enum Opcode {
     IMUL("imul"),
     IDIV("idiv"),
     RET("ret"),
-    XCHG("xchg");
+    XCHG("xchg"),
+    LEAVE("leave");
 
     private String value;
 

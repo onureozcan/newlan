@@ -2,7 +2,7 @@ package org.zero.newlan.be.x86;
 
 public class Registers {
 
-    public final String AX,BX,CX,DX,SP;
+    public final String AX,BX,CX,DX,SP,BP;
     private final int sizeOfInt;
 
     public Registers(boolean x64) {
@@ -13,6 +13,7 @@ public class Registers {
             CX = "rcx";
             DX = "rdx";
             SP = "rsp";
+            BP = "rbp";
         } else {
             sizeOfInt = 4;
             AX = "eax";
@@ -20,6 +21,7 @@ public class Registers {
             CX = "ecx";
             DX = "edx";
             SP = "esp";
+            BP = "rbp";
         }
     }
 

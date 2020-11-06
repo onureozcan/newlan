@@ -1,9 +1,9 @@
 package org.zero.newlan.fe.ast.expression;
 
-import org.zero.newlan.fe.operator.BinaryOperator;
 import org.zero.newlan.fe.operator.OperationNotSupportedException;
 import org.zero.newlan.fe.operator.Operator;
 import org.zero.newlan.fe.operator.PrefixOperator;
+import org.zero.newlan.fe.type.ObjectType;
 import org.zero.newlan.fe.type.Type;
 
 public class PrefixExpression extends Expression {
@@ -13,6 +13,7 @@ public class PrefixExpression extends Expression {
     private PrefixOperator operator;
 
     private PrefixExpression(
+        ObjectType thisObj,
         Type type,
         String fileName,
         int lineNumber,
@@ -20,7 +21,7 @@ public class PrefixExpression extends Expression {
         Expression right,
         PrefixOperator operator
     ) {
-        super(type, right.getNumberOfChildren() + 1,fileName, lineNumber, pos);
+        super(thisObj, type, right.getNumberOfChildren() + 1, fileName, lineNumber, pos);
         this.right = right;
         this.operator = operator;
     }
@@ -35,7 +36,15 @@ public class PrefixExpression extends Expression {
 
     static PrefixExpression from(Expression right, PrefixOperator operator) throws OperationNotSupportedException {
         Type returnType = operator.returnsTo(right.getType());
-        return new PrefixExpression(returnType, right.getFileName(), right.getLineNumber(), right.getPos(), right, operator);
+        return new PrefixExpression(
+            right.getThisObjType(),
+            returnType,
+            right.getFileName(),
+            right.getLineNumber(),
+            right.getPos(),
+            right,
+            operator
+        );
     }
 
     @Override

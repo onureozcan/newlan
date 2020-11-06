@@ -5,7 +5,7 @@ public class PointerType extends Type{
     private final Type referringType;
 
     public PointerType(Type referringType) {
-        super("ref to " + referringType.getName());
+        super("pointer to " + referringType.getName());
         this.referringType = referringType;
     }
 
