@@ -23,6 +23,7 @@ expression:primaryExpresssion
        | expression bop='&&' expression
        | expression bop='||' expression
        | expression bop=('==' | '!=') expression
+       | expression bop ='=' expression
        ;
 
 primaryExpresssion
