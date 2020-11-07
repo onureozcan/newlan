@@ -1,10 +1,12 @@
 package org.zero.newlan.be.x86.expression;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 import org.zero.newlan.be.x86.Registers;
 import org.zero.newlan.be.x86.program.Opcode;
 import org.zero.newlan.be.x86.program.Program;
@@ -22,6 +24,8 @@ public class RegisterBasedExpressionCompiler extends ExpressionCompiler {
 
     private String valueReg;
 
+    private static final String STACK = "STACK";
+
     private Map<String, Boolean> registerAvailabilityMap = new HashMap<>(4);
 
     public RegisterBasedExpressionCompiler(Program program, Registers registers) {
@@ -33,20 +37,26 @@ public class RegisterBasedExpressionCompiler extends ExpressionCompiler {
         registerAvailabilityMap.put(r.AX, true);
         registerAvailabilityMap.put(r.BX, true);
         registerAvailabilityMap.put(r.CX, true);
-        //registerAvailabilityMap.put(r.DX, true);
         super.compileExpression(expression);
-        program.addInstruction(Opcode.MOV).op(r.AX).op(valueReg);
+        if (!valueReg.equals(STACK)) {
+            program.addInstruction(Opcode.MOV).op(r.AX).op(valueReg);
+        } else {
+            program.addInstruction(Opcode.POP).op(r.AX);
+        }
     }
 
     @Override
     void compileAssignment(BinaryExpression binaryExpression) {
         compileInternal(binaryExpression.getRight());
         String r2 = valueReg;
-        compileInternal(binaryExpression.getLeft());
-        String r1 = valueReg;
-        program.addInstruction(Opcode.MOV).op("[" + r1 + "]").op(r2).comment(binaryExpression.toString());
-        freeRegister(r1);
-        valueReg = r2;
+        AtomicExpression atom = (AtomicExpression) binaryExpression.getLeft();
+        try {
+            int index = atom.getThisObjType().getIndexOf(atom.getData());
+            program.addInstruction(Opcode.MOV).op("[" + r.BP + " - (" + index * r.sizeOfInt() + ")]").op(r2)
+                .comment(binaryExpression.toString());
+        } catch (PropertyNotFoundException e) {
+            // ignore for now
+        }
     }
 
     void numericNegInt(PrefixExpression prefixExpression) {
@@ -121,19 +131,23 @@ public class RegisterBasedExpressionCompiler extends ExpressionCompiler {
     }
 
     void compileAtom(AtomicExpression atom) {
+        valueReg = getRegister();
+        String data;
         if (atom.getType() instanceof IntegralType) {
-            valueReg = getRegister();
             if (atom.isIdent()) {
                 try {
                     int index = atom.getThisObjType().getIndexOf(atom.getData());
-                    // Base pointer points at this
-                    program.addInstruction(Opcode.MOV).op(valueReg).op("[" + r.BP + " + " + (index * r.sizeOfInt()) + "]")
-                        .comment(atom.toString());
+                    data = "[" + r.BP + " - (" + index * r.sizeOfInt() + ")]";
                 } catch (PropertyNotFoundException e) {
                     throw new RuntimeException("this should not have happened!");
                 }
             } else {
-                program.addInstruction(Opcode.MOV).op(valueReg).op(atom.getData()).comment(atom.toString());
+                data = atom.getData();
+            }
+            if (!valueReg.equals(STACK)) {
+                program.addInstruction(Opcode.MOV).op(valueReg).op(data).comment(atom.toString());
+            } else {
+                program.addInstruction(Opcode.PUSH).op(data).comment(atom.toString());
             }
         }
     }
@@ -151,25 +165,67 @@ public class RegisterBasedExpressionCompiler extends ExpressionCompiler {
         String deepReg = valueReg;
         compileInternal(shallow);
         String shallowReg = valueReg;
+        boolean deepSpilled = deepReg.equals(STACK), shallowSpilled = shallowReg.equals(STACK);
+        if (deepSpilled) {
+            deepReg = spillRegisterOtherThan(deepReg, shallowReg);
+        }
+        if (shallowSpilled) {
+            shallowReg = spillRegisterOtherThan(deepReg, shallowReg);
+        }
         if (deep == binaryExpression.getLeft()) {
             valueReg = deepReg;
-            freeRegister(shallowReg);
+            if (!shallowSpilled) {
+                freeRegister(shallowReg);
+            }
             consumer.accept(valueReg, shallowReg);
         } else {
             valueReg = shallowReg;
-            freeRegister(deepReg);
+            if (!deepSpilled) {
+                freeRegister(deepReg);
+            }
             consumer.accept(valueReg, deepReg);
         }
+        if (deepSpilled || shallowSpilled) {
+            program.addInstruction(Opcode.MOV).op(r.DX).op(valueReg).comment("result temporarily in dx");
+            valueReg = STACK;
+        }
+        if (deepSpilled) {
+            restoreFromStack(deepReg);
+        }
+        if (shallowSpilled) {
+            restoreFromStack(shallowReg);
+        }
+        if (deepSpilled || shallowSpilled) {
+            program.addInstruction(Opcode.PUSH).op(r.DX).comment("result goes back to stack");
+            valueReg = STACK;
+        }
+    }
+
+    private void restoreFromStack(String reg) {
+        program.addInstruction(Opcode.POP).op(reg).comment("restore " + reg);
     }
 
     private String getRegister() {
         Optional<String> freeRegOptional = registerAvailabilityMap.entrySet().stream().filter(Entry::getValue).map(Entry::getKey)
             .findFirst();
         freeRegOptional.ifPresent(s -> registerAvailabilityMap.put(s, false));
-        return freeRegOptional.get(); // in a sane world, we can never run out of registers with binary ops
+        return freeRegOptional.orElseGet(() -> STACK);
     }
 
     private void freeRegister(String reg) {
         registerAvailabilityMap.put(reg, true);
+    }
+
+    private String spillRegisterOtherThan(String save1, String save2) {
+        List<String> resultingRegisters = registerAvailabilityMap.keySet()
+            .stream().filter(r -> !r.equals(save1) && !r.equals(save2)).collect(Collectors.toList());
+        String reg = resultingRegisters.get(0); // we have 3 registers so this always have a value
+        // pop dx ; dx is value
+        // push r ; save r
+        // moc r, dx
+        program.addInstruction(Opcode.POP).op(r.DX).comment("value temporarily in dx");
+        program.addInstruction(Opcode.PUSH).op(reg).comment("spill " + reg + "");
+        program.addInstruction(Opcode.MOV).op(reg).op(r.DX).comment("value from dx to " + reg);
+        return reg;
     }
 }
