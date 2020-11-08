@@ -13,7 +13,7 @@ public class PrefixExpression extends Expression {
     private PrefixOperator operator;
 
     private PrefixExpression(
-        ObjectType thisObj,
+        ObjectType contextObjectType,
         Type type,
         String fileName,
         int lineNumber,
@@ -21,7 +21,7 @@ public class PrefixExpression extends Expression {
         Expression right,
         PrefixOperator operator
     ) {
-        super(thisObj, type, right.getNumberOfChildren() + 1, fileName, lineNumber, pos);
+        super(contextObjectType, type, right.getNumberOfChildren() + 1, fileName, lineNumber, pos);
         this.right = right;
         this.operator = operator;
     }
@@ -37,7 +37,7 @@ public class PrefixExpression extends Expression {
     static PrefixExpression from(Expression right, PrefixOperator operator) throws OperationNotSupportedException {
         Type returnType = operator.returnsTo(right.getType());
         return new PrefixExpression(
-            right.getThisObjType(),
+            right.getContextObjectType(),
             returnType,
             right.getFileName(),
             right.getLineNumber(),

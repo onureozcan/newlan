@@ -7,13 +7,13 @@ public class AstNode {
     private final String fileName;
     private final int lineNumber;
     private final int pos;
-    private ObjectType thisObjType;
+    private ObjectType contextObjectType;
 
-    public AstNode(ObjectType thisObjType, String fileName, int lineNumber, int pos) {
+    public AstNode(ObjectType contextObjectType, String fileName, int lineNumber, int pos) {
         this.fileName = fileName;
         this.lineNumber = lineNumber;
         this.pos = pos;
-        this.thisObjType = thisObjType;
+        this.contextObjectType = contextObjectType;
     }
 
     public String getFileName() {
@@ -28,7 +28,7 @@ public class AstNode {
         return pos;
     }
 
-    public ObjectType getThisObjType() {
-        return thisObjType;
+    public ObjectType getContextObjectType() {
+        return contextObjectType;
     }
 }

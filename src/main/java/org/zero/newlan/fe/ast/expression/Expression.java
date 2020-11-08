@@ -18,8 +18,8 @@ public class Expression extends AstNode {
 
     private int numberOfChildren;
 
-    Expression(ObjectType thisObj, Type type, int numberOfChildren, String fileName, int lineNumber, int pos) {
-        super(thisObj, fileName, lineNumber, pos);
+    Expression(ObjectType contextObjectType, Type type, int numberOfChildren, String fileName, int lineNumber, int pos) {
+        super(contextObjectType, fileName, lineNumber, pos);
         this.type = type;
         this.numberOfChildren = numberOfChildren;
     }

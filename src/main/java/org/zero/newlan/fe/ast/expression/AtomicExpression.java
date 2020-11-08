@@ -16,8 +16,8 @@ public class AtomicExpression extends Expression {
     private final String data;
     private boolean isIdent;
 
-    private AtomicExpression(ObjectType thisObjType, Type type, String data, boolean isIdent, String fileName, int lineNumber, int pos) {
-        super(thisObjType, type, 0, fileName, lineNumber, pos);
+    private AtomicExpression(ObjectType contextObjectType, Type type, String data, boolean isIdent, String fileName, int lineNumber, int pos) {
+        super(contextObjectType, type, 0, fileName, lineNumber, pos);
         this.data = data;
         this.isIdent = isIdent;
     }

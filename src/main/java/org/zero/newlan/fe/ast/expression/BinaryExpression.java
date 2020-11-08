@@ -15,7 +15,7 @@ public class BinaryExpression extends Expression {
     private Operator operator;
 
     private BinaryExpression(
-        ObjectType thisObjType,
+        ObjectType contextObjectType,
         Type type,
         String fileName,
         int lineNumber,
@@ -24,7 +24,7 @@ public class BinaryExpression extends Expression {
         Expression right,
         Operator operator
     ) {
-        super(thisObjType, type, left.getNumberOfChildren() + right.getNumberOfChildren() + 2, fileName, lineNumber, pos);
+        super(contextObjectType, type, left.getNumberOfChildren() + right.getNumberOfChildren() + 2, fileName, lineNumber, pos);
         this.left = left;
         this.right = right;
         this.operator = operator;
@@ -45,7 +45,7 @@ public class BinaryExpression extends Expression {
     public static BinaryExpression from(Expression left, Expression right, BinaryOperator operator) throws OperationNotSupportedException {
         Type returnType = operator.returnsTo(left.getType(), right.getType());
         return new BinaryExpression(
-            left.getThisObjType(),
+            left.getContextObjectType(),
             returnType,
             left.getFileName(),
             left.getLineNumber(),

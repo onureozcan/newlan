@@ -51,7 +51,7 @@ public class RegisterBasedExpressionCompiler extends ExpressionCompiler {
         String r2 = valueReg;
         AtomicExpression atom = (AtomicExpression) binaryExpression.getLeft();
         try {
-            int index = atom.getThisObjType().getIndexOf(atom.getData());
+            int index = atom.getContextObjectType().getIndexOf(atom.getData());
             program.addInstruction(Opcode.MOV).op("[" + r.BP + " - (" + index * r.sizeOfInt() + ")]").op(r2)
                 .comment(binaryExpression.toString());
         } catch (PropertyNotFoundException e) {
@@ -136,7 +136,7 @@ public class RegisterBasedExpressionCompiler extends ExpressionCompiler {
         if (atom.getType() instanceof IntegralType) {
             if (atom.isIdent()) {
                 try {
-                    int index = atom.getThisObjType().getIndexOf(atom.getData());
+                    int index = atom.getContextObjectType().getIndexOf(atom.getData());
                     data = "[" + r.BP + " - (" + index * r.sizeOfInt() + ")]";
                 } catch (PropertyNotFoundException e) {
                     throw new RuntimeException("this should not have happened!");
