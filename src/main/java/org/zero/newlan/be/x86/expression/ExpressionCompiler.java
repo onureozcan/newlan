@@ -5,6 +5,7 @@ import org.zero.newlan.be.x86.program.Program;
 import org.zero.newlan.fe.ast.expression.AtomicExpression;
 import org.zero.newlan.fe.ast.expression.BinaryExpression;
 import org.zero.newlan.fe.ast.expression.Expression;
+import org.zero.newlan.fe.ast.expression.FunctionCallExpression;
 import org.zero.newlan.fe.ast.expression.PrefixExpression;
 import org.zero.newlan.fe.operator.AdditionOperator;
 import org.zero.newlan.fe.operator.AssignmentOperator;
@@ -19,6 +20,7 @@ import org.zero.newlan.fe.type.IntegralType;
 public abstract class ExpressionCompiler {
 
     Program program;
+
     Registers r;
 
     ExpressionCompiler(Program program, Registers registers) {
@@ -27,10 +29,15 @@ public abstract class ExpressionCompiler {
     }
 
     abstract void intToIntAddition(BinaryExpression binaryExpression);
+
     abstract void intToIntDivision(BinaryExpression binaryExpression);
+
     abstract void intToIntMultiplication(BinaryExpression binaryExpression);
+
     abstract void numericNegInt(PrefixExpression prefixExpression);
+
     abstract void intToIntSubtraction(BinaryExpression binaryExpression);
+
     abstract void compileAtom(AtomicExpression atom);
 
     public void compileExpression(Expression expression) {
@@ -47,8 +54,13 @@ public abstract class ExpressionCompiler {
         } else if (expression instanceof PrefixExpression) {
             PrefixExpression prefixExpression = (PrefixExpression) expression;
             compilePrefixExpression(prefixExpression);
+        } else if (expression instanceof FunctionCallExpression) {
+            FunctionCallExpression functionCallExpression = (FunctionCallExpression) expression;
+            compileFunctionCall(functionCallExpression);
         }
     }
+
+    abstract void compileFunctionCall(FunctionCallExpression functionCallExpression);
 
     private void compileBinaryExpression(BinaryExpression binaryExpression) {
         if (binaryExpression.getOperator() instanceof AssignmentOperator) {

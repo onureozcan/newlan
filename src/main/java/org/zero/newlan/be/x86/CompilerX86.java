@@ -10,13 +10,16 @@ import org.zero.newlan.be.x86.program.Program;
 import org.zero.newlan.fe.ast.Body;
 import org.zero.newlan.fe.ast.expression.Expression;
 import org.zero.newlan.fe.type.ObjectType;
+import org.zero.newlan.fe.type.PropertyNotFoundException;
 import org.zero.newlan.fe.type.TypeNotFoundException;
 import org.zero.newlan.fe.type.TypeRepo;
 
 public class CompilerX86 {
 
     private Program program = new Program();
+
     private Registers r;
+
     private ExpressionCompiler expressionCompiler;
 
     public CompilerX86(boolean x64) {
@@ -25,16 +28,20 @@ public class CompilerX86 {
     }
 
     public void compile(Body body, String fileName) throws IOException {
+        program.addHeader("global new_lan_main");
+        program.addHeader("global arg0");
+        program.addHeader("extern printNumber");
         program.addLabel("new_lan_main");
-        allocGlobal();
-        body.getStatements().forEach(s-> {
+        prepareGlobal();
+        body.getStatements().forEach(s -> {
             if (s.getData() instanceof Expression) {
                 this.compileExpression((Expression) s.getData());
             }
         });
         program.addInstruction(Opcode.LEAVE);
         program.addInstruction(Opcode.RET);
-        String outputAsm = "global new_lan_main\n\n" + program.toString();
+        String outputAsm = program.toString() +
+            "\n" + getNativeArg0Function().toString();
         Files.write(new File(fileName).toPath(), outputAsm.getBytes());
     }
 
@@ -42,14 +49,30 @@ public class CompilerX86 {
         expressionCompiler.compileExpression(expression);
     }
 
-    private void allocGlobal() {
+    private void prepareGlobal() {
         try {
-            int propertiesSize = TypeRepo.<ObjectType>getType("$Global").getProperties().size() * r.sizeOfInt();
+            ObjectType global = TypeRepo.<ObjectType>getType("$Global");
+            int propertiesSize = global.getProperties().size() * r.sizeOfInt();
             program.addInstruction(Opcode.PUSH).op(r.BP);
             program.addInstruction(Opcode.MOV).op(r.BP).op(r.SP);
-            program.addInstruction(Opcode.ADD).op(r.SP).op(propertiesSize + "");
-        } catch (TypeNotFoundException e) {
-            // this never happens, ignore
+            program.addInstruction(Opcode.SUB).op(r.SP).op(propertiesSize + "");
+            initGlobalFunction(global, "printNumber");
+        } catch (TypeNotFoundException | PropertyNotFoundException e) {
+            // this never happens, wea already validated. yes, it is a design issue, ignore
         }
+    }
+
+    private void initGlobalFunction(ObjectType global, String function) throws PropertyNotFoundException {
+        int index = global.getIndexOf(function);
+        program.addInstruction(Opcode.MOV).op(r.DWORD + " [" + r.BP + " - (" + index * r.sizeOfInt() + ")]").op(function)
+            .comment("initialize native function " + function);
+    }
+
+    private Program getNativeArg0Function() {
+        Program pop = new Program();
+        pop.addLabel("arg0");
+        pop.addInstruction(Opcode.MOV).op(r.AX).op("[" + r.BP + " + " + r.sizeOfInt() * 2 + " ]");
+        pop.addInstruction(Opcode.RET);
+        return pop;
     }
 }

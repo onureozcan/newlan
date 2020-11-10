@@ -14,7 +14,9 @@ public enum Opcode {
     IDIV("idiv"),
     RET("ret"),
     XCHG("xchg"),
-    LEAVE("leave");
+    LEAVE("leave"),
+    CALL("call"),
+    LEA("lea");
 
     private String value;
 

@@ -1,5 +1,6 @@
 package org.zero.newlan.be.x86.expression;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +14,9 @@ import org.zero.newlan.be.x86.program.Program;
 import org.zero.newlan.fe.ast.expression.AtomicExpression;
 import org.zero.newlan.fe.ast.expression.BinaryExpression;
 import org.zero.newlan.fe.ast.expression.Expression;
+import org.zero.newlan.fe.ast.expression.FunctionCallExpression;
 import org.zero.newlan.fe.ast.expression.PrefixExpression;
+import org.zero.newlan.fe.type.FunctionType;
 import org.zero.newlan.fe.type.IntegralType;
 import org.zero.newlan.fe.type.PropertyNotFoundException;
 
@@ -39,10 +42,46 @@ public class RegisterBasedExpressionCompiler extends ExpressionCompiler {
         registerAvailabilityMap.put(r.CX, true);
         super.compileExpression(expression);
         if (!valueReg.equals(STACK)) {
-            program.addInstruction(Opcode.MOV).op(r.AX).op(valueReg);
+            if (!r.AX.equals(valueReg)) {
+                program.addInstruction(Opcode.MOV).op(r.AX).op(valueReg);
+            }
         } else {
             program.addInstruction(Opcode.POP).op(r.AX);
         }
+    }
+
+    @Override
+    void compileFunctionCall(FunctionCallExpression functionCallExpression) {
+        compileInternal(functionCallExpression.getCallee());
+        String returnReg = valueReg;
+        String calleeReg = valueReg;
+//        if (!returnReg.equals(r.AX)) { program.addInstruction(Opcode.PUSH).op(r.AX).comment("save ax before call"); }
+//        if (!returnReg.equals(r.BX)) { program.addInstruction(Opcode.PUSH).op(r.BX).comment("save bx before call"); }
+//        if (!returnReg.equals(r.CX)) { program.addInstruction(Opcode.PUSH).op(r.CX).comment("save cx before call"); }
+        if (calleeReg.equals(STACK)) {
+            calleeReg = r.AX;
+            program.addInstruction(Opcode.POP).op(calleeReg);
+        }
+        functionCallExpression.getArguments().stream().sorted(Collections.reverseOrder()).forEach(e -> {
+            compileInternal(e);
+            if (!valueReg.equals(STACK)) {
+                program.addInstruction(Opcode.PUSH).op(valueReg);
+                freeRegister(valueReg);
+            }
+        });
+        program.addInstruction(Opcode.CALL).op(calleeReg).comment(functionCallExpression.toString());
+        if (returnReg.equals(STACK)) {
+            program.addInstruction(Opcode.MOV).op(r.DX).op(r.AX).comment("call result temporarily to dx");
+        }
+//        if (!returnReg.equals(r.CX)) { program.addInstruction(Opcode.POP).op(r.CX).comment("restore cx after call"); }
+//        if (!returnReg.equals(r.BX)) { program.addInstruction(Opcode.POP).op(r.BX).comment("restore bx after call"); }
+//        if (!returnReg.equals(r.AX)) { program.addInstruction(Opcode.POP).op(r.AX).comment("restore ax after call"); }
+        if (returnReg.equals(STACK)) {
+            program.addInstruction(Opcode.PUSH).op(r.DX).comment("call result goes to stack");
+        } else if (!returnReg.equals(r.AX)) {
+            program.addInstruction(Opcode.MOV).op(returnReg).op(r.AX).comment("call result goes to " + returnReg);
+        }
+        valueReg = returnReg;
     }
 
     @Override
@@ -149,6 +188,19 @@ public class RegisterBasedExpressionCompiler extends ExpressionCompiler {
             } else {
                 program.addInstruction(Opcode.PUSH).op(data).comment(atom.toString());
             }
+        } else if (atom.getType() instanceof FunctionType) {
+            try {
+                int index = atom.getContextObjectType().getIndexOf(atom.getData());
+                data = "[" + r.BP + " - (" + index * r.sizeOfInt() + ")]";
+            } catch (PropertyNotFoundException e) {
+                throw new RuntimeException("this should not have happened!");
+            }
+            if (!valueReg.equals(STACK)) {
+                program.addInstruction(Opcode.MOV).op(valueReg).op(data).comment(atom.toString());
+            } else {
+                program.addInstruction(Opcode.MOV).op(r.DX).op(data).comment(atom.toString());
+                program.addInstruction(Opcode.PUSH).op(r.DX).comment(atom.toString());
+            }
         }
     }
 
@@ -167,10 +219,10 @@ public class RegisterBasedExpressionCompiler extends ExpressionCompiler {
         String shallowReg = valueReg;
         boolean deepSpilled = deepReg.equals(STACK), shallowSpilled = shallowReg.equals(STACK);
         if (deepSpilled) {
-            deepReg = spillRegisterOtherThan(deepReg, shallowReg);
+            deepReg = spillOneRegisterOtherThan(deepReg, shallowReg);
         }
         if (shallowSpilled) {
-            shallowReg = spillRegisterOtherThan(deepReg, shallowReg);
+            shallowReg = spillOneRegisterOtherThan(deepReg, shallowReg);
         }
         if (deep == binaryExpression.getLeft()) {
             valueReg = deepReg;
@@ -216,16 +268,20 @@ public class RegisterBasedExpressionCompiler extends ExpressionCompiler {
         registerAvailabilityMap.put(reg, true);
     }
 
-    private String spillRegisterOtherThan(String save1, String save2) {
+    private String spillOneRegisterOtherThan(String save1, String save2) {
         List<String> resultingRegisters = registerAvailabilityMap.keySet()
             .stream().filter(r -> !r.equals(save1) && !r.equals(save2)).collect(Collectors.toList());
         String reg = resultingRegisters.get(0); // we have 3 registers so this always have a value
+        spillOneRegister(reg);
+        return reg;
+    }
+
+    private void spillOneRegister(String reg) {
         // pop dx ; dx is value
         // push r ; save r
         // moc r, dx
         program.addInstruction(Opcode.POP).op(r.DX).comment("value temporarily in dx");
         program.addInstruction(Opcode.PUSH).op(reg).comment("spill " + reg + "");
         program.addInstruction(Opcode.MOV).op(reg).op(r.DX).comment("value from dx to " + reg);
-        return reg;
     }
 }

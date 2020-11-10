@@ -4,6 +4,7 @@ public class Registers {
 
     public final String AX,BX,CX,DX,SP,BP;
     private final int sizeOfInt;
+    final String DWORD;
 
     public Registers(boolean x64) {
         if (x64) {
@@ -14,6 +15,7 @@ public class Registers {
             DX = "rdx";
             SP = "rsp";
             BP = "rbp";
+            DWORD = "qword";
         } else {
             sizeOfInt = 4;
             AX = "eax";
@@ -22,6 +24,7 @@ public class Registers {
             DX = "edx";
             SP = "esp";
             BP = "rbp";
+            DWORD = "dword";
         }
     }
 

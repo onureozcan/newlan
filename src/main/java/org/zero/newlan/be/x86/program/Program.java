@@ -6,14 +6,12 @@ import java.util.stream.Collectors;
 
 public class Program {
 
+    private final List<String> headers;
     private final List<Instruction> instructions;
 
     public Program() {
         instructions = new ArrayList<>();
-    }
-
-    private Program(List<Instruction> instructions) {
-        this.instructions = instructions;
+        headers = new ArrayList<>();
     }
 
     public Instruction addInstruction(Opcode opcode) {
@@ -22,12 +20,12 @@ public class Program {
         return ins;
     }
 
-    public void addLabel(String label) {
-        instructions.add(new Instruction(Opcode.BLANK).label(label));
+    public void addHeader(String header) {
+        headers.add(header);
     }
 
-    public Program simplify() {
-        return new Program(pushPopToMov(instructions));
+    public void addLabel(String label) {
+        instructions.add(new Instruction(Opcode.BLANK).label(label));
     }
 
     private List<Instruction> pushPopToMov(List<Instruction> actual) {
@@ -58,6 +56,7 @@ public class Program {
 
     @Override
     public String toString() {
-        return instructions.stream().map(Instruction::toString).collect(Collectors.joining("\n"));
+        return String.join("\n", headers) + "\n\n" +
+            instructions.stream().map(Instruction::toString).collect(Collectors.joining("\n"));
     }
 }

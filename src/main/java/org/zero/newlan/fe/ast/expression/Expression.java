@@ -32,13 +32,13 @@ public class Expression extends AstNode {
         return type;
     }
 
-    public static Expression from(ExpressionContext expressionContext, ObjectType thisObj, String fileName) {
+    public static Expression from(ExpressionContext expressionContext, ObjectType contextObject, String fileName) {
         PrimaryExpresssionContext primaryExpresssionContext = expressionContext.primaryExpresssion();
         if (primaryExpresssionContext != null) {
             AtomContext atom = primaryExpresssionContext.atom();
             ExpressionContext expression = primaryExpresssionContext.expression();
-            if (expression != null) { return from(expression, thisObj, fileName); }
-            if (atom != null) { return AtomicExpression.from(atom, thisObj, fileName); }
+            if (expression != null) { return from(expression, contextObject, fileName); }
+            if (atom != null) { return AtomicExpression.from(atom, contextObject, fileName); }
         } else if (expressionContext.bop != null) {
             String bopToken = expressionContext.bop.getText();
             BinaryOperator op = OperatorRepo.getBinary(bopToken);
@@ -47,8 +47,8 @@ public class Expression extends AstNode {
             }
             try {
                 return BinaryExpression.from(
-                    from(expressionContext.expression(0), thisObj, fileName),
-                    from(expressionContext.expression(1), thisObj, fileName),
+                    from(expressionContext.expression(0), contextObject, fileName),
+                    from(expressionContext.expression(1), contextObject, fileName),
                     op
                 );
             } catch (OperationNotSupportedException e) {
@@ -59,12 +59,14 @@ public class Expression extends AstNode {
             PrefixOperator op = OperatorRepo.getPrefix(prefixToken);
             try {
                 return PrefixExpression.from(
-                    from(expressionContext.expression(0), thisObj, fileName),
+                    from(expressionContext.expression(0), contextObject, fileName),
                     op
                 );
             } catch (OperationNotSupportedException e) {
                 throw new CompileException(expressionContext, fileName, e);
             }
+        } else if (expressionContext.methodCall != null) {
+            return FunctionCallExpression.from(expressionContext, contextObject, fileName);
         }
         throw new CompileException(expressionContext, fileName);
     }

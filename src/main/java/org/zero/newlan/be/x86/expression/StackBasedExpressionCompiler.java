@@ -6,6 +6,7 @@ import org.zero.newlan.be.x86.program.Program;
 import org.zero.newlan.fe.ast.expression.AtomicExpression;
 import org.zero.newlan.fe.ast.expression.BinaryExpression;
 import org.zero.newlan.fe.ast.expression.Expression;
+import org.zero.newlan.fe.ast.expression.FunctionCallExpression;
 import org.zero.newlan.fe.ast.expression.PrefixExpression;
 import org.zero.newlan.fe.type.IntegralType;
 
@@ -19,6 +20,11 @@ public class StackBasedExpressionCompiler extends ExpressionCompiler {
     public void compileExpression(Expression expression) {
         super.compileInternal(expression);
         program.addInstruction(Opcode.POP).op(r.AX);
+    }
+
+    @Override
+    void compileFunctionCall(FunctionCallExpression functionCallExpression) {
+
     }
 
     @Override

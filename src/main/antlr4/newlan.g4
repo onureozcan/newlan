@@ -14,6 +14,7 @@ statement: ((expression | variableDeclaration) SEMICOL);
 
 expression:primaryExpresssion
        | expression bop ='.' expression
+       | expression methodCall ='(' (expression (',' expression)*)? ')'
        | prefix='-' expression
        | prefix=('~'|'!') expression
        | expression bop=('*'|'/'|'%') expression
